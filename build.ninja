@@ -1,0 +1,10 @@
+rule link
+  command = g++ -shared -o $out $in -L/home/dhkim/.local/lib/python3.6/site-packages/torch/lib -L/usr/local/cuda/lib64 -L/usr/lib/aarch64-linux-gnu -lc10 -lc10_cuda -ltorch -lcudart -lprotobuf -lprotobuf-lite -pthread -lpthread -lnvinfer
+rule protoc
+  command = protoc $in --cpp_out=. --python_out=.
+rule cxx
+  command = g++ -c -fPIC $in -I/usr/local/cuda/include -I/home/dhkim/.local/lib/python3.6/site-packages/torch/include -I/home/dhkim/.local/lib/python3.6/site-packages/torch/include/torch/csrc/api/include -I. -std=c++11 -I/usr/include/aarch64-linux-gnu
+build torch2trt/converters/interpolate/interpolate.pb.h torch2trt/converters/interpolate/interpolate.pb.cc torch2trt/converters/interpolate/interpolate_pb2.py: protoc torch2trt/converters/interpolate/interpolate.proto
+build interpolate.pb.o: cxx torch2trt/converters/interpolate/interpolate.pb.cc
+build interpolate.o: cxx torch2trt/converters/interpolate/interpolate.cpp
+build torch2trt/libtorch2trt.so: link interpolate.pb.o interpolate.o
